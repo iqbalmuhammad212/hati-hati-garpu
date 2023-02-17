@@ -1,0 +1,107 @@
+Imports System.IO
+
+Public Class Form1
+    ' deklarasivariabel global
+    Dim listBuku As New List(Of String)
+    Dim listPeminjaman As New List(Of String)
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' membacadaftarbukudari file "daftar_buku.txt"
+        Try
+            Dim daftarBuku As String() = File.ReadAllLines("daftar_buku.txt")
+            listBuku.AddRange(daftarBuku)
+            MsgBox("Daftar buku berhasil dimuat!")
+        Catch ex As Exception
+            MsgBox("Gagal membaca file daftar_buku.txt: " & ex.Message)
+        End Try
+
+    End Sub
+
+    Private Sub btnCari_Click(sender As Object, e As EventArgs) Handles btnCari.Click
+        ' mencaribukuberdasarkanjudul
+        Dim judul As String = txtCari.Text
+        Dim bukuDitemukan As Boolean = False
+        For Each buku As String In listBuku
+            If buku.Contains(judul) Then
+                bukuDitemukan = True
+                MsgBox("Buku ditemukan: " & buku)
+                Exit For
+            End If
+        Next
+        If Not bukuDitemukan Then
+            MsgBox("Buku tidak ditemukan!")
+        End If
+    End Sub
+
+
+    Private Sub btnPinjam_Click(sender As Object, e As EventArgs) Handles btnPinjam.Click
+        ' meminjambuku
+        Dim judul As String = txtPinjam.Text
+        Dim bukuTersedia As Boolean = False
+        For i As Integer = 0 To listBuku.Count - 1
+            If listBuku(i).Contains(judul) Then
+                bukuTersedia = True
+                ' hapusbukudaridaftar
+                listBuku.RemoveAt(i)
+                ' tambahkanpeminjamankedaftar
+                listPeminjaman.Add(judul & ";" & DateTime.Now.ToString("yyyy-MM-dd"))
+                MsgBox("Buku berhasil dipinjam!")
+                Exit For
+            End If
+        Next
+        If Not bukuTersedia Then
+            MsgBox("Buku tidak tersedia!")
+        End If
+    End Sub
+
+
+    Private Sub btnSimpan_Click(sender As Object, e As EventArgs) Handles btnSimpan.Click
+        ' menyimpandaftarbukudanpeminjamanke file
+        Dim sb As New System.Text.StringBuilder
+        ' tambahkandaftarbukuke string builder
+        For Each buku As String In listBuku
+            sb.AppendLine(buku)
+        Next
+        sb.AppendLine("---")
+        ' tambahkandaftarpeminjamanke string builder
+        For Each peminjaman As String In listPeminjaman
+            sb.AppendLine(peminjaman)
+        Next
+        ' tulis string builder ke file "perpustakaan.txt"
+        Try
+            File.WriteAllText("perpustakaan.txt", sb.ToString())
+            MsgBox("Data berhasil disimpan!")
+        Catch ex As Exception
+            MsgBox("Gagalmenyimpan data: " & ex.Message)
+        End Try
+    End Sub
+
+    Private Sub btnKeluar_Click(sender As Object, e As EventArgs) Handles btnKeluar.Click
+        ' keluardariaplikasi
+        Application.Exit()
+    End Sub
+
+    Private Sub btnKembali_Click(sender As Object, e As EventArgs) Handles btnKembali.Click
+        ' mengembalikanbuku
+        Dim judul As String = txtKembali.Text
+        Dim bukuDipinjam As Boolean = False
+        For i As Integer = 0 To listPeminjaman.Count - 1
+            If listPeminjaman(i).StartsWith(judul) Then
+                bukuDipinjam = True
+                ' hapuspeminjamandaridaftar
+                listPeminjaman.RemoveAt(i)
+                ' tambahkanbukukedaftar
+                listBuku.Add(judul)
+                MsgBox("Buku berhasil dikembalikan!")
+                Exit For
+            End If
+        Next
+        If Not bukuDipinjam Then
+            MsgBox("Buku tidak sedang dipinjam!")
+        End If
+    End Sub
+
+
+
+
+End Class
